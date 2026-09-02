@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Focus Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="auth-panel" class="box">
+    <h2>Connexion / Création</h2>
+    <input id="auth-email" type="email" placeholder="Email">
+    <input id="auth-password" type="password" placeholder="Mot de passe">
+    <button onclick="handleAuth('login')">Se connecter</button>
+    <button onclick="handleAuth('register')">Créer un compte</button>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="stats-bar">
+      <span>Aujourd'hui : <b id="stat-minutes">0</b> min</span>
+      <span>Streak : <b id="stat-streak">0</b> j</span>
+      <button onclick="logout()">Déconnexion</button>
+    </div>
+
+    <div class="box timer-box">
+      <h1 id="timer-display">25:00</h1>
+      <div id="session-setup">
+        <input id="session-label" placeholder="Tâche en cours...">
+        <input id="session-tags" placeholder="tags (séparés par virgule)">
+        <input id="session-minutes" type="number" value="25" min="1" max="180">
+        <button onclick="startSession()">Démarrer</button>
+      </div>
+      <div id="session-controls" class="hidden">
+        <button onclick="bumpDistraction()">Distraction (+1)</button>
+        <button onclick="terminateSession('completed')">Terminer</button>
+        <button onclick="terminateSession('abandoned')">Abandonner</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>Historique</h3>
+      <input id="search-input" placeholder="Filtrer par libellé..." oninput="loadHistory()">
+      <ul id="history-list"></ul>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

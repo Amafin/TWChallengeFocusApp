@@ -1,0 +1,8 @@
+body { font-family: system-ui, sans-serif; display: flex; justify-content: center; padding: 2rem; background: #f4f4f9; }
+.box { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 1rem; width: 380px; }
+.hidden { display: none; }
+.stats-bar { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+input, button { display: block; width: 100%; margin-top: 0.5rem; padding: 0.5rem; box-sizing: border-box; }
+#timer-display { font-size: 3.5rem; text-align: center; margin: 0.5rem 0; font-variant-numeric: tabular-nums; }
+ul { list-style: none; padding: 0; }
+li { padding: 0.5rem 0; border-bottom: 1px solid #eee; font-size: 0.85rem; }
