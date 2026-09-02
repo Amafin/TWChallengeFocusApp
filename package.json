@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node backend/server.js",
-    "seed": "node backend/seed.js",
+    "dev": "node backend/seed.js && node backend/server.js",
+    "start": "node backend/server.js",
     "test": "node backend/test.js"
   },
   "dependencies": {
