@@ -1,0 +1,14 @@
+# Dépendances Node.js (ne jamais versionner les dossiers volumineux)
+node_modules/
+
+# Base de données SQLite locale et fichiers temporaires
+focus.db
+focus.db-journal
+
+# Fichiers d'environnement (si vous stockez des clés plus tard)
+.env
+
+# Fichiers système et éditeur
+.DS_Store
+Thumbs.db
+.vscode/
