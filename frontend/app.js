@@ -34,32 +34,68 @@ function logout() {
 // Vérité temporelle calculée depuis startedAt
 function syncTimerDisplay() {
   if (!currentSession) return;
-  const started = new Date(currentSession.startedAt).getTime();
-  const plannedSec = currentSession.plannedMinutes * 60;
-  const elapsedSec = Math.floor((Date.now() - started) / 1000);
-  const remainingSec = Math.max(0, plannedSec - elapsedSec);
+
+  let remainingSec;
+
+  if (currentSession.isPaused) {
+    // Si en pause, on utilise la valeur gelée
+    remainingSec = currentSession.pausedRemainingSec;
+  } else {
+    // Vérité serveur : dérivée de startedAt
+    const started = new Date(currentSession.startedAt).getTime();
+    const plannedSec = currentSession.plannedMinutes * 60;
+    const elapsedSec = Math.floor((Date.now() - started) / 1000);
+    remainingSec = Math.max(0, plannedSec - elapsedSec);
+  }
 
   const m = Math.floor(remainingSec / 60).toString().padStart(2, '0');
   const s = (remainingSec % 60).toString().padStart(2, '0');
   document.getElementById('timer-display').innerText = `${m}:${s}`;
 
-  // Gestion de l'état du bouton "Terminer"
   const finishBtn = document.getElementById('finish-btn');
   if (finishBtn) {
-    if (remainingSec > 0) {
-      finishBtn.disabled = true;
-      finishBtn.innerText = `Terminer (${m}:${s} restants)`;
-      finishBtn.style.opacity = '0.5';
-    } else {
-      finishBtn.disabled = false;
-      finishBtn.innerText = 'Terminer';
-      finishBtn.style.opacity = '1';
-    }
+    const isFinished = remainingSec === 0;
+    finishBtn.disabled = !isFinished;
+    finishBtn.style.opacity = isFinished ? '1' : '0.5';
+    finishBtn.innerText = isFinished ? 'Terminer' : `Terminer (${m}:${s})`;
   }
 
-  if (remainingSec === 0) {
+  if (remainingSec === 0 && !currentSession.isPaused) {
     terminateSession('completed');
   }
+}
+
+function togglePause() {
+  if (!currentSession) return;
+
+  const pauseBtn = document.getElementById('pause-btn');
+
+  if (!currentSession.isPaused) {
+    // METTRE EN PAUSE : on gèle le temps restant
+    const started = new Date(currentSession.startedAt).getTime();
+    const plannedSec = currentSession.plannedMinutes * 60;
+    const elapsedSec = Math.floor((Date.now() - started) / 1000);
+    
+    currentSession.pausedRemainingSec = Math.max(0, plannedSec - elapsedSec);
+    currentSession.isPaused = true;
+    
+    clearInterval(timerInterval);
+    pauseBtn.innerText = 'Reprendre';
+  } else {
+    // REPRENDRE : on recalcule un startedAt cohérent
+    const plannedSec = currentSession.plannedMinutes * 60;
+    const newElapsedSec = plannedSec - currentSession.pausedRemainingSec;
+    
+    currentSession.startedAt = new Date(Date.now() - newElapsedSec * 1000).toISOString();
+    currentSession.isPaused = false;
+    delete currentSession.pausedRemainingSec;
+
+    pauseBtn.innerText = 'Mettre en pause';
+    timerInterval = setInterval(syncTimerDisplay, 1000);
+  }
+
+  localStorage.setItem('currentSession', JSON.stringify(currentSession));
+  syncTimerDisplay();
 }
 
 async function startSession() {
@@ -112,12 +148,18 @@ function renderSessionUI() {
   document.getElementById('session-controls').classList.toggle('hidden', !active);
 
   if (active) {
-    // Affiche le total de distractions en cours
     document.getElementById('current-distractions').innerText = currentSession.distractionCount || 0;
     
+    const pauseBtn = document.getElementById('pause-btn');
+    if (pauseBtn) {
+      pauseBtn.innerText = currentSession.isPaused ? 'Reprendre' : 'Mettre en pause';
+    }
+
     syncTimerDisplay();
     clearInterval(timerInterval);
-    timerInterval = setInterval(syncTimerDisplay, 1000);
+    if (!currentSession.isPaused) {
+      timerInterval = setInterval(syncTimerDisplay, 1000);
+    }
   }
 }
 
