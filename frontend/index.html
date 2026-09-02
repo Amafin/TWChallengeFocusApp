@@ -30,8 +30,9 @@
         <button onclick="startSession()">Démarrer</button>
       </div>
       <div id="session-controls" class="hidden">
+        <p>Distractions actuelles : <b id="current-distractions">0</b></p>
         <button onclick="bumpDistraction()">Distraction (+1)</button>
-        <button onclick="terminateSession('completed')">Terminer</button>
+        <button id="finish-btn" onclick="terminateSession('completed')">Terminer</button>
         <button onclick="terminateSession('abandoned')">Abandonner</button>
       </div>
     </div>

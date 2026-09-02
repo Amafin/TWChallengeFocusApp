@@ -43,6 +43,20 @@ function syncTimerDisplay() {
   const s = (remainingSec % 60).toString().padStart(2, '0');
   document.getElementById('timer-display').innerText = `${m}:${s}`;
 
+  // Gestion de l'état du bouton "Terminer"
+  const finishBtn = document.getElementById('finish-btn');
+  if (finishBtn) {
+    if (remainingSec > 0) {
+      finishBtn.disabled = true;
+      finishBtn.innerText = `Terminer (${m}:${s} restants)`;
+      finishBtn.style.opacity = '0.5';
+    } else {
+      finishBtn.disabled = false;
+      finishBtn.innerText = 'Terminer';
+      finishBtn.style.opacity = '1';
+    }
+  }
+
   if (remainingSec === 0) {
     terminateSession('completed');
   }
@@ -80,10 +94,16 @@ async function terminateSession(status) {
 
 async function bumpDistraction() {
   if (!currentSession) return;
-  await api(`/api/sessions/${currentSession.id}`, {
+  const res = await api(`/api/sessions/${currentSession.id}`, {
     method: 'PATCH',
     body: JSON.stringify({ distractionIncrement: 1 })
   });
+  
+  if (res.distractionCount !== undefined) {
+    currentSession.distractionCount = res.distractionCount;
+    localStorage.setItem('currentSession', JSON.stringify(currentSession));
+    document.getElementById('current-distractions').innerText = currentSession.distractionCount;
+  }
 }
 
 function renderSessionUI() {
@@ -92,6 +112,9 @@ function renderSessionUI() {
   document.getElementById('session-controls').classList.toggle('hidden', !active);
 
   if (active) {
+    // Affiche le total de distractions en cours
+    document.getElementById('current-distractions').innerText = currentSession.distractionCount || 0;
+    
     syncTimerDisplay();
     clearInterval(timerInterval);
     timerInterval = setInterval(syncTimerDisplay, 1000);
@@ -110,8 +133,10 @@ async function loadHistory() {
   const ul = document.getElementById('history-list');
   ul.innerHTML = list.map(s => `
     <li>
-      <b>${s.label}</b> - ${s.plannedMinutes}m [${s.status}] 
-      <small>${new Date(s.startedAt).toLocaleDateString()}</small>
+      <b>${s.label}</b> - ${s.plannedMinutes}m [${s.status}]
+      <br>
+      <small>${new Date(s.startedAt).toLocaleDateString()} — Distractions : <b>${s.distractionCount}</b></small>
+      <br>
       <span>Tags: ${s.tags.join(', ')}</span>
     </li>
   `).join('');
